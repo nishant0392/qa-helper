@@ -46,10 +46,8 @@ test.describe("Responsive layouts", () => {
   test("devtools-like runner (single window + Next)", async ({ page }) => {
     await page.setViewportSize({ width: 1470, height: 712 });
 
-    const runnerUrl =
-      "http://127.0.0.1:5500/node-playground/src/devtools-viewport-runner.html";
-    const appUrl =
-      "http://127.0.0.1:5500/node-playground/src/responsive-demo.html";
+    const runnerUrl = "http://127.0.0.1:5500/src/devtools-viewport-runner.html";
+    const appUrl = "http://127.0.0.1:5500/src/responsive-demo.html";
 
     await page.goto(runnerUrl);
 
