@@ -3,3 +3,5 @@ playwright-report/
 test-results/
 fullscreen-preview/
 weather-app/
+
+.env
