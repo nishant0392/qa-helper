@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DevTools Viewport Runner</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: #0b1220;
+        color: #e5e7eb;
+      }
+
+      .shell {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .topbar {
+        height: 44px;
+        min-height: 44px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #020617;
+        border-bottom: 1px solid #111827;
+      }
+
+      .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 260px;
+      }
+
+      .traffic {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      .dot:nth-child(1) {
+        background: #f87171;
+      }
+
+      .dot:nth-child(2) {
+        background: #fbbf24;
+      }
+
+      .dot:nth-child(3) {
+        background: #34d399;
+      }
+
+      .title {
+        font-size: 12px;
+        color: #9ca3af;
+      }
+
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: flex-end;
+      }
+
+      .meta {
+        font-size: 12px;
+        color: #cbd5e1;
+        padding: 4px 8px;
+        border: 1px solid #1f2937;
+        border-radius: 8px;
+        background: #020617;
+        white-space: nowrap;
+      }
+
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      button {
+        appearance: none;
+        border: 1px solid #1f2937;
+        background: #020617;
+        color: #e5e7eb;
+        padding: 6px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      button:hover {
+        border-color: #38bdf8;
+        color: #e0f2fe;
+      }
+
+      .main {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        background: radial-gradient(circle at top, #111827, #020617);
+      }
+
+      .viewport-frame {
+        position: absolute;
+        inset: 10px;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        overflow: hidden;
+      }
+
+      .emulated-holder {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform-origin: top left;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        background: #ffffff;
+      }
+
+      iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="traffic">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <div class="title">Viewport Runner</div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="meta" id="meta">—</div>
+          <div class="actions">
+            <button id="prevBtn" type="button">Prev</button>
+            <button id="nextBtn" type="button">Next</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="main">
+        <div class="viewport-frame" id="viewportFrame">
+          <div class="emulated-holder" id="emulatedHolder">
+            <iframe id="appFrame" title="emulated-app"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let viewports = [];
+      let pageUrl = "";
+      let index = 0;
+
+      const DESIGN = {
+        // purely for display; emulation uses the actual viewport width/height
+        // (so CSS media queries inside the iframe match the chosen size)
+        scaleRounding: 2,
+      };
+
+      const metaEl = document.getElementById("meta");
+      const frameEl = document.getElementById("viewportFrame");
+      const holderEl = document.getElementById("emulatedHolder");
+      const iframeEl = document.getElementById("appFrame");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+
+      function setMeta(text) {
+        if (!metaEl) return;
+        metaEl.textContent = text;
+      }
+
+      function getCurrentViewport() {
+        if (!viewports || viewports.length === 0) return null;
+        const safeIndex = Math.max(0, Math.min(index, viewports.length - 1));
+        return viewports[safeIndex];
+      }
+
+      function updateEmulation() {
+        const vp = getCurrentViewport();
+        if (!vp) return;
+        if (!frameEl || !holderEl || !iframeEl) return;
+
+        const emuW = Math.round(vp.resolution.width);
+        const emuH = Math.round(vp.resolution.height);
+
+        const shellW = frameEl.clientWidth;
+        const shellH = frameEl.clientHeight;
+
+        const scale = Math.min(shellW / emuW, shellH / emuH);
+        const scaledW = emuW * scale;
+        const scaledH = emuH * scale;
+
+        const left = Math.max((shellW - scaledW) / 2, 0);
+        const top = Math.max((shellH - scaledH) / 2, 0);
+
+        holderEl.style.width = emuW + "px";
+        holderEl.style.height = emuH + "px";
+        holderEl.style.left = left + "px";
+        holderEl.style.top = top + "px";
+        holderEl.style.transform =
+          "scale(" + scale.toFixed(DESIGN.scaleRounding) + ")";
+
+        iframeEl.style.background = "white";
+        if (pageUrl) {
+          // src is set once; size changes happen by holder dimensions
+          if (iframeEl.getAttribute("src") !== pageUrl) {
+            iframeEl.src = pageUrl;
+          }
+        }
+
+        const name = `${vp.screen} | ${vp.layout}`;
+        setMeta(`${name} (${emuW}×${emuH})  •  ${Math.round(scale * 100)}%`);
+      }
+
+      function next() {
+        if (!viewports || viewports.length === 0) return;
+        index = Math.min(index + 1, viewports.length - 1);
+        updateEmulation();
+      }
+
+      function prev() {
+        if (!viewports || viewports.length === 0) return;
+        index = Math.max(index - 1, 0);
+        updateEmulation();
+      }
+
+      // Public API for Playwright injection
+      window.__setDevtoolsRunnerConfig = (cfg) => {
+        viewports = cfg && cfg.viewports ? cfg.viewports : [];
+        pageUrl = cfg && cfg.pageUrl ? cfg.pageUrl : "";
+        index =
+          cfg && typeof cfg.initialIndex === "number" ? cfg.initialIndex : 0;
+        updateEmulation();
+      };
+
+      window.addEventListener("resize", () => updateEmulation());
+      nextBtn && nextBtn.addEventListener("click", next);
+      prevBtn && prevBtn.addEventListener("click", prev);
+    </script>
+  </body>
+</html>

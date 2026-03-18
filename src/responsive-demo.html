@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Responsive Demo (No Scroll)</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden; /* no scrollbars */
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: linear-gradient(135deg, #0f172a, #020617);
+        color: #f9fafb;
+      }
+
+      .viewport-shell {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at top, #1e293b, #020617);
+        padding: 8px;
+      }
+
+      .device-frame {
+        width: 100%;
+        height: 100%;
+        max-width: 1400px;
+        max-height: 900px;
+        border-radius: 14px;
+        background: #020617;
+        box-shadow: 0 22px 60px rgba(15, 23, 42, 0.85);
+        display: flex;
+        flex-direction: column;
+        border: 1px solid rgba(15, 23, 42, 0.9);
+        overflow: hidden;
+      }
+
+      .device-toolbar {
+        height: 32px;
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+        background: #020617;
+        border-bottom: 1px solid #111827;
+        color: #9ca3af;
+        font-size: 11px;
+      }
+
+      .device-toolbar-left,
+      .device-toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .device-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #f97373;
+      }
+
+      .device-dot:nth-child(2) {
+        background: #facc15;
+      }
+
+      .device-dot:nth-child(3) {
+        background: #22c55e;
+      }
+
+      .device-select {
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid #1f2937;
+        background: #020617;
+        color: #e5e7eb;
+        font-size: 11px;
+      }
+
+      .device-viewport {
+        flex: 1;
+        position: relative;
+        background: radial-gradient(circle at top, #111827, #020617);
+        overflow: hidden; /* emulated viewport frame */
+      }
+
+      .app-frame {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: radial-gradient(circle at top left, #1d283a, #020617);
+        box-shadow: 0 24px 80px rgba(15, 23, 42, 0.9);
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transform-origin: top left;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .title {
+        font-size: clamp(16px, 1.2vw + 1vh, 22px);
+        font-weight: 600;
+        color: #e5e7eb;
+      }
+
+      .pill {
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(59, 130, 246, 0.18);
+        color: #bfdbfe;
+        border: 1px solid rgba(59, 130, 246, 0.7);
+      }
+
+      .grid {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .card {
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), #020617);
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        height: 20vh;
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: clamp(11px, 0.7vw + 0.6vh, 13px);
+        color: #cbd5f5;
+      }
+
+      .card-title {
+        font-weight: 500;
+        color: #e5e7eb;
+      }
+
+      .badge {
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(56, 189, 248, 0.7);
+        color: #7dd3fc;
+        background: rgba(15, 23, 42, 0.8);
+      }
+
+      .card-body {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: clamp(11px, 0.7vw + 0.7vh, 14px);
+        color: #e5e7eb;
+      }
+
+      /* Stacking behavior for narrow viewports inside the emulated 1920x1080 */
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: minmax(0, 1fr);
+          grid-template-rows: repeat(3, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="viewport-shell">
+      <div class="device-frame">
+        <div class="device-toolbar">
+          <div class="device-toolbar-left">
+            <span class="device-dot"></span>
+            <span class="device-dot"></span>
+            <span class="device-dot"></span>
+            <span>Responsive Demo</span>
+          </div>
+          <div class="device-toolbar-right">
+            <span id="device-resolution">1920 × 1080</span>
+            <select class="device-select" id="device-zoom">
+              <option value="auto">Auto</option>
+              <option value="1">100%</option>
+              <option value="0.75">75%</option>
+              <option value="0.5">50%</option>
+              <option value="0.33">33%</option>
+            </select>
+          </div>
+        </div>
+        <div class="device-viewport" id="device-viewport">
+          <div class="app-frame" id="app-frame">
+            <header class="header">
+              <div class="title">Responsive Preview (No Scroll)</div>
+              <div class="pill">Viewport-driven layout</div>
+            </header>
+
+            <div class="grid">
+              <section class="card">
+                <div class="card-header">
+                  <span class="card-title">Primary content</span>
+                  <span class="badge">2.2fr</span>
+                </div>
+                <div class="card-body">
+                  Main area scales with width &amp; height
+                </div>
+              </section>
+
+              <section class="card">
+                <div class="card-header">
+                  <span class="card-title">Side panel</span>
+                  <span class="badge">1.4fr</span>
+                </div>
+                <div class="card-body">
+                  Good for navigation or secondary content
+                </div>
+              </section>
+
+              <section class="card">
+                <div class="card-header">
+                  <span class="card-title">Bottom left</span>
+                  <span class="badge">Footer / meta</span>
+                </div>
+                <div class="card-body">Use this card to test small widgets</div>
+              </section>
+
+              <section class="card">
+                <div class="card-header">
+                  <span class="card-title">Bottom right</span>
+                  <span class="badge">Actions</span>
+                </div>
+                <div class="card-body">Buttons, CTAs, or live info</div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const DESIGN_WIDTH = 1920;
+        const DESIGN_HEIGHT = 1080;
+
+        const viewport = document.getElementById("device-viewport");
+        const frame = document.getElementById("app-frame");
+        const zoomSelect = document.getElementById("device-zoom");
+
+        function applyScale(scale) {
+          if (!viewport || !frame) return;
+          const vw = viewport.clientWidth;
+          const vh = viewport.clientHeight;
+          const usedWidth = DESIGN_WIDTH * scale;
+          const usedHeight = DESIGN_HEIGHT * scale;
+
+          frame.style.transform = "scale(" + scale + ")";
+          frame.style.left = Math.max((vw - usedWidth) / 2, 0) + "px";
+          frame.style.top = Math.max((vh - usedHeight) / 2, 0) + "px";
+        }
+
+        function recalc() {
+          if (!viewport) return;
+          const vw = viewport.clientWidth;
+          const vh = viewport.clientHeight;
+
+          let scale;
+          if (zoomSelect && zoomSelect.value !== "auto") {
+            scale = parseFloat(zoomSelect.value);
+          } else {
+            scale = Math.min(vw / DESIGN_WIDTH, vh / DESIGN_HEIGHT);
+          }
+
+          if (!isFinite(scale) || scale <= 0) scale = 1;
+          applyScale(scale);
+        }
+
+        window.addEventListener("resize", recalc);
+        if (zoomSelect) {
+          zoomSelect.addEventListener("change", recalc);
+        }
+        window.addEventListener("load", recalc);
+      })();
+    </script>
+  </body>
+</html>

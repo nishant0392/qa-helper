@@ -1,0 +1,27 @@
+{
+  "name": "node-playground",
+  "version": "1.0.0",
+  "description": "Just a playground to test some node stuff !!",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "playwright test --project=chromium",
+    "test:ui": "playwright test --ui --project=chromium",
+    "test:debug": "playwright test --debug --project=chromium",
+    "report": "playwright show-report",
+    "test:resp": "playwright test tests/responsiveness.spec.ts --project=chromium",
+    "view": "playwright test tests/responsiveness.spec.ts --headed --project=chromium"
+  },
+  "author": "Nishant Kumar",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.5.1",
+    "express": "^4.18.2",
+    "rss-to-json": "^2.1.1",
+    "xml2json": "^0.12.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.5.0"
+  }
+}

@@ -1,0 +1,8 @@
+playwright-report/
+test-results/
+node_modules/
+
+.env
+
+fullscreen-preview/
+weather-app/
