@@ -44,7 +44,7 @@ test.describe("Responsive layouts", () => {
   //   });
 
   test("devtools-like runner (single window + Next)", async ({ page }) => {
-    await page.setViewportSize({ width: 1470, height: 712 });
+    await page.setViewportSize({ width: 1470, height: 762 });
 
     const runnerUrl = "http://127.0.0.1:5500/src/devtools-viewport-runner.html";
     const appUrl = "http://127.0.0.1:5500/src/responsive-demo.html";
