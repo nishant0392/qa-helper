@@ -3,9 +3,9 @@ let pageUrl = "";
 let index = 0;
 
 const metaEl = document.getElementById("meta");
-const frameEl = document.getElementById("viewportFrame");
-const holderEl = document.getElementById("emulatedHolder");
-const iframeEl = document.getElementById("appFrame");
+const viewportEl = document.getElementById("viewport");
+const emulatorEl = document.getElementById("emulator");
+const appIframeEl = document.getElementById("appIframe");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 
@@ -22,32 +22,35 @@ function getCurrentViewport() {
 
 function updateEmulation() {
   const vp = getCurrentViewport();
-  if (!vp) return;
-  if (!frameEl || !holderEl || !iframeEl) return;
+
+  if (!vp || !viewportEl || !emulatorEl || !appIframeEl) return;
 
   // Logical viewport size for the app under test.
   // The iframe content should behave as if browser viewport is emuW x emuH.
   const emuW = Math.round(vp.resolution.width);
   const emuH = Math.round(vp.resolution.height);
 
-  // Visible space available in the runner shell.
-  const shellW = frameEl.clientWidth;
-  const shellH = frameEl.clientHeight;
+  // Visible space available in the emulator shell.
+  const styles = getComputedStyle(viewportEl);
+  const padX = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+  const padY = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
+  const emuShellW = viewportEl.clientWidth - padX - 50; // Emulator shell width
+  const emuShellH = viewportEl.clientHeight - padY - 50; // Emulator shell height
 
   // Fit the emulated viewport into available space (DevTools-like zoom).
   // This changes only visual scale, not emulated logical dimensions.
-  const scale = Math.min(shellW / emuW, shellH / emuH);
+  const scale = Math.min(emuShellW / emuW, emuShellH / emuH);
 
-  // Holder sets logical size, transform sets visual zoom.
-  holderEl.style.width = emuW + "px";
-  holderEl.style.height = emuH + "px";
-  holderEl.style.transform = "scale(" + scale.toFixed(2) + ")";
+  // Emulator sets logical size, transform sets visual zoom.
+  emulatorEl.style.width = emuW + "px";
+  emulatorEl.style.height = emuH + "px";
+  emulatorEl.style.transform = "scale(" + scale.toFixed(2) + ")";
 
-  iframeEl.style.background = "white";
+  appIframeEl.style.background = "white";
   if (pageUrl) {
-    // Load target URL once; viewport changes are driven by holder sizing.
-    if (iframeEl.getAttribute("src") !== pageUrl) {
-      iframeEl.src = pageUrl;
+    // Load target URL once; viewport changes are driven by emulator sizing.
+    if (appIframeEl.getAttribute("src") !== pageUrl) {
+      appIframeEl.src = pageUrl;
     }
   }
 
@@ -68,7 +71,7 @@ function prev() {
 }
 
 // Public API for Playwright injection
-window.__setDevtoolsRunnerConfig = (cfg) => {
+window.__setEmulatorConfig = (cfg) => {
   viewports = cfg && cfg.viewports ? cfg.viewports : [];
   pageUrl = cfg && cfg.pageUrl ? cfg.pageUrl : "";
   index = cfg && typeof cfg.initialIndex === "number" ? cfg.initialIndex : 0;

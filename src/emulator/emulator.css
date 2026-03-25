@@ -112,7 +112,7 @@ button:hover {
   color: #e0f2fe;
 }
 
-.viewport-frame {
+.viewport {
   height: calc(100% - 44px);
   display: flex;
   justify-content: center;
@@ -121,7 +121,7 @@ button:hover {
   padding: 20px 40px;
 }
 
-.emulated-holder {
+.emulator {
   border: 1px solid rgba(148, 163, 184, 0.25);
   background: #ffffff;
 }
