@@ -70,6 +70,10 @@ function prev() {
   updateEmulation();
 }
 
+/*******************************************************
+ * EMULATOR EXECUTION
+ *******************************************************/
+
 // Public API for Playwright injection
 window.__setEmulatorConfig = (cfg) => {
   viewports = cfg && cfg.viewports ? cfg.viewports : [];
@@ -81,3 +85,5 @@ window.__setEmulatorConfig = (cfg) => {
 window.addEventListener("resize", () => updateEmulation());
 nextBtn && nextBtn.addEventListener("click", next);
 prevBtn && prevBtn.addEventListener("click", prev);
+
+/*******************************************************/
