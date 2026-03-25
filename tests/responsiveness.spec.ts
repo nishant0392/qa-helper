@@ -3,6 +3,9 @@ import { getAllViewportResolutions } from "./viewport";
 
 const VIEWPORTS = getAllViewportResolutions();
 const TAKE_SCREENSHOT = false; // Set to true to take screenshots of the layouts
+const LAPTOP_WIDTH = 1470;
+const LAPTOP_HEIGHT = 762;
+const EMULATOR_URL = "http://127.0.0.1:5500/src/emulator/emulator.html";
 
 test.describe("Responsive layouts", () => {
   // Set the timeout to 1 hour
@@ -44,12 +47,11 @@ test.describe("Responsive layouts", () => {
   //   });
 
   test("devtools-like runner (single window + Next)", async ({ page }) => {
-    await page.setViewportSize({ width: 1470, height: 762 });
+    await page.setViewportSize({ width: LAPTOP_WIDTH, height: LAPTOP_HEIGHT });
 
-    const runnerUrl = "http://127.0.0.1:5500/src/devtools-viewport-runner.html";
     const appUrl = "http://127.0.0.1:5500/src/responsive-demo.html";
 
-    await page.goto(runnerUrl);
+    await page.goto(EMULATOR_URL);
 
     // Inject runner config: same URL, different emulated viewports.
     await page.evaluate(

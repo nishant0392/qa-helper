@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emulator</title>
+
+    <!-- This is the stylesheet for the emulator -->
+    <link rel="stylesheet" href="./emulator.css" />
+  </head>
+  <body>
+    <!-- This is the shell that will be used to display the topbar and the viewport frame -->
+    <div class="shell">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="traffic">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <div class="title">Emulator</div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="meta" id="meta">—</div>
+          <div class="actions">
+            <button id="prevBtn" type="button">Prev</button>
+            <button id="nextBtn" type="button">Next</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- This is the viewport frame that will be used to display the emulated app in the shell -->
+      <div class="viewport-frame" id="viewportFrame">
+        <!-- This is the emulated holder that will be used to display the emulated app -->
+        <div class="emulated-holder" id="emulatedHolder">
+          <!-- This is the iframe that will be used to display the emulated app -->
+          <iframe id="appFrame" title="emulated-app"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- This is the script for the emulator -->
+    <script src="./emulator.js"></script>
+  </body>
+</html>
