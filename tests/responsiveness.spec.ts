@@ -15,6 +15,8 @@ const OPTIONS = {
 test.describe("Responsive layouts", () => {
   // Run the emulator with the laptop viewport
   test("Emulator", async ({ page }) => {
+    test.setTimeout(60 * 60 * 1000); // 1 hour
+
     await page.setViewportSize({
       width: OPTIONS.LAPTOP_WIDTH,
       height: OPTIONS.LAPTOP_HEIGHT,
@@ -37,7 +39,7 @@ test.describe("Responsive layouts", () => {
     );
 
     // Keep it open so you can click Next/Prev to inspect.
-    await page.waitForTimeout(3600000);
+    await page.waitForTimeout(3600 * 1000); // 1 hour
 
     if (OPTIONS.TAKE_SCREENSHOT) {
       // Take screenshot so you can visually inspect layouts
