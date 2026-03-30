@@ -22,20 +22,30 @@
           BlinkMacSystemFont,
           "Segoe UI",
           sans-serif;
-        background: #0c1222;
+        background: #e1e9ef;
         color: #e8f4ff;
       }
 
+      /* Fill the emulated canvas (html/body), not the real browser — avoid 100vw/100vh here
+         or the shell stays “window-sized” and sits on the left inside the 1920×1080 box. */
       .viewport-shell {
-        width: 100vw;
-        height: 100vh;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
         display: flex;
         align-items: stretch;
         justify-content: center;
-        padding: clamp(6px, 1.2vw, 14px);
         background:
-          radial-gradient(ellipse 120% 80% at 50% -20%, rgba(56, 189, 248, 0.35), transparent 50%),
-          radial-gradient(ellipse 80% 60% at 100% 100%, rgba(139, 92, 246, 0.22), transparent 45%),
+          radial-gradient(
+            ellipse 120% 80% at 50% -20%,
+            rgba(56, 189, 248, 0.35),
+            transparent 50%
+          ),
+          radial-gradient(
+            ellipse 80% 60% at 100% 100%,
+            rgba(139, 92, 246, 0.22),
+            transparent 45%
+          ),
           linear-gradient(165deg, #0c1222 0%, #111827 40%, #0f172a 100%);
       }
 
@@ -46,7 +56,8 @@
         min-height: 0;
         display: flex;
         flex-direction: column;
-        gap: clamp(8px, 1.5vh, 14px);
+        gap: 14px;
+        padding: 20px 30px;
       }
 
       .header {
@@ -133,7 +144,11 @@
         justify-content: space-between;
         gap: 8px;
         padding: clamp(8px, 1.2vh, 12px) clamp(10px, 1.5vw, 14px);
-        background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.88));
+        background: linear-gradient(
+          180deg,
+          rgba(15, 23, 42, 0.95),
+          rgba(15, 23, 42, 0.88)
+        );
         border-top: 1px solid rgba(56, 189, 248, 0.2);
       }
 
@@ -165,7 +180,11 @@
         border-radius: 14px;
         padding: clamp(8px, 1.2vh, 12px);
         border: 1px solid rgba(139, 92, 246, 0.35);
-        background: linear-gradient(145deg, rgba(88, 28, 135, 0.25), rgba(15, 23, 42, 0.85));
+        background: linear-gradient(
+          145deg,
+          rgba(88, 28, 135, 0.25),
+          rgba(15, 23, 42, 0.85)
+        );
       }
 
       .card-title {
@@ -267,8 +286,8 @@
                 <div>
                   <h2>Primary surface</h2>
                   <p>
-                    Resize the viewport: this block uses flex wrap, min-widths, and fluid type so
-                    you can spot overflow and clipping.
+                    Resize the viewport: this block uses flex wrap, min-widths,
+                    and fluid type so you can spot overflow and clipping.
                   </p>
                 </div>
               </div>
@@ -278,7 +297,8 @@
               <section class="card">
                 <div class="card-title">Side column</div>
                 <div class="card-body">
-                  Stacks beside the hero on wide screens; drops below when the row wraps.
+                  Stacks beside the hero on wide screens; drops below when the
+                  row wraps.
                 </div>
               </section>
               <section class="card">
@@ -343,5 +363,34 @@
         </div>
       </div>
     </div>
+
+    <script>
+      const emulatedWidth = 1920;
+      const emulatedHeight = 1080;
+
+      function applyEmulatedViewport() {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const scale = Math.min(vw / emulatedWidth, vh / emulatedHeight);
+        const tx = (vw - emulatedWidth * scale) / 2;
+        const ty = (vh - emulatedHeight * scale) / 2;
+        console.log("scale:", scale);
+
+        const root = document.documentElement;
+        root.style.width = `${emulatedWidth}px`;
+        root.style.height = `${emulatedHeight}px`;
+        root.style.overflow = "hidden";
+        root.style.position = "fixed";
+        root.style.left = `${tx}px`;
+        root.style.top = `${ty}px`;
+        root.style.transform = `scale(${scale})`;
+        root.style.transformOrigin = "0 0";
+      }
+
+      applyEmulatedViewport();
+      window.addEventListener("resize", applyEmulatedViewport);
+      window.visualViewport?.addEventListener("resize", applyEmulatedViewport);
+      window.visualViewport?.addEventListener("scroll", applyEmulatedViewport);
+    </script>
   </body>
 </html>
