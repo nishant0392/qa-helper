@@ -10,7 +10,7 @@
     "test:debug": "playwright test --debug --project=chromium",
     "report": "playwright show-report",
     "test:resp": "playwright test tests/responsiveness.spec.ts --project=chromium",
-    "view": "playwright test tests/responsiveness.spec.ts --headed --project=chromium"
+    "view": "playwright test tests/dual-view.spec.ts --headed --project=chromium --workers=1"
   },
   "author": "Nishant Kumar",
   "license": "ISC",
