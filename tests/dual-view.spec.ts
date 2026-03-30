@@ -1,9 +1,9 @@
 import { test, chromium, type Page } from "@playwright/test";
 import { getAllViewportResolutions } from "./viewport";
 
-const BASE_URL = process.env.TEST_BASE_URL ?? "http://127.0.0.1:5501";
+const BASE_URL = process.env.TEST_BASE_URL ?? "http://127.0.0.1:5500";
 const APP_URL = `${BASE_URL}/src/responsive-demo.html`;
-const CONTROL_URL = `${BASE_URL}/src/emulator/control-panel.html`;
+const CONTROL_URL = `${BASE_URL}/src/control-panel/control-panel.html`;
 
 /** Left ~70% width, right ~30%; heights use full avail height. */
 const LEFT_RATIO = 0.7;
@@ -48,9 +48,9 @@ test("dual window: app (left ~70%) + control panel (right ~30%)", async () => {
     args: ["--disable-popup-blocking"],
   });
 
-  let leftW = 1200;
-  let rightW = 514;
-  let screenH = 800;
+  let leftW = 1029;
+  let rightW = 441;
+  let screenH = 801;
 
   try {
     const probe = await browser.newContext();

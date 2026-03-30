@@ -12,7 +12,7 @@ const OPTIONS = {
   LAPTOP_HEIGHT: 762,
   TAKE_SCREENSHOT: false,
   VIEWPORTS: getAllViewportResolutions(),
-  EMULATOR_URL: "http://127.0.0.1:5500/src/emulator/emulator.html",
+  EMULATOR_URL: "http://127.0.0.1:5500/src/control-panel/control-panel.html",
   APP_URL: "http://127.0.0.1:5500/src/responsive-demo.html", // The app URL to test
 };
 
