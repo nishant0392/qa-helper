@@ -8,8 +8,8 @@ html,
 body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  min-height: 100%;
+  width: 100vw;
+  height: 100vh;
   font-family:
     system-ui,
     -apple-system,
@@ -21,9 +21,9 @@ body {
 }
 
 .panel {
-  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
-  padding: 12px;
+  padding: 20px 30px;
 }
 
 h1 {
