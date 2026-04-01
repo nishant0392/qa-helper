@@ -363,34 +363,5 @@
         </div>
       </div>
     </div>
-
-    <script>
-      const emulatedWidth = 1920;
-      const emulatedHeight = 1080;
-
-      function applyEmulatedViewport() {
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        const scale = Math.min(vw / emulatedWidth, vh / emulatedHeight);
-        const tx = (vw - emulatedWidth * scale) / 2;
-        const ty = (vh - emulatedHeight * scale) / 2;
-        console.log("scale:", scale);
-
-        const root = document.documentElement;
-        root.style.width = `${emulatedWidth}px`;
-        root.style.height = `${emulatedHeight}px`;
-        root.style.overflow = "hidden";
-        root.style.position = "fixed";
-        root.style.left = `${tx}px`;
-        root.style.top = `${ty}px`;
-        root.style.transform = `scale(${scale})`;
-        root.style.transformOrigin = "0 0";
-      }
-
-      applyEmulatedViewport();
-      window.addEventListener("resize", applyEmulatedViewport);
-      window.visualViewport?.addEventListener("resize", applyEmulatedViewport);
-      window.visualViewport?.addEventListener("scroll", applyEmulatedViewport);
-    </script>
   </body>
 </html>

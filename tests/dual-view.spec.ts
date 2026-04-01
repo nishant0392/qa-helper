@@ -135,25 +135,41 @@ async function __playwrightViewport(payload: {
     height: RENDERER_WINDOW.height,
   });
 
-  // Get the zoom percent required to display the viewport within the renderer window.
-  const zoomPercent = getZoomPercent(RENDERER_WINDOW, {
+  await rendererPage.evaluate(
+    ({ w, h }: { w: number; h: number }) => {
+      // set scale to emulate the actual viewport size
+      const root = document.documentElement;
+      root.style.removeProperty("zoom");
+
+      const scale = Math.min(1, window.innerWidth / w, window.innerHeight / h);
+      const tx = (window.innerWidth - w * scale) / 2;
+      const ty = (window.innerHeight - h * scale) / 2;
+      root.style.width = `${w}px`;
+      root.style.height = `${h}px`;
+      root.style.overflow = "hidden";
+      root.style.position = "fixed";
+      root.style.left = `${tx}px`;
+      root.style.top = `${ty}px`;
+      root.style.transform = `scale(${scale})`;
+      root.style.transformOrigin = "0 0";
+    },
+    { w: vw, h: vh },
+  );
+
+  const vp = viewports[index];
+  // Node has no `window` — use the same renderer size as setViewportSize().
+  const baseZoomPct = getZoomPercent(RENDERER_WINDOW, {
     width: vw,
     height: vh,
   });
-
-  // Set the zoom percent to the renderer page.
-  await rendererPage.evaluate((zp) => {
-    document.documentElement.style.zoom = `${zp}%`;
-  }, zoomPercent);
-
-  const vp = viewports[index];
+  const effectiveZoomPct = (baseZoomPct * userZoomPercent) / 100;
   const label = useCustom
-    ? `Custom ${customW}x${customH} • zoom slider ${userZoomPercent}% (effective ~${zoomPercent.toFixed(0)}%)`
+    ? `Custom ${customW}x${customH} • zoom slider ${userZoomPercent}% (effective ~${effectiveZoomPct.toFixed(0)}%)`
     : `${vp.screen} | ${vp.layout} (${vw}x${vh}) [${index + 1}/${viewports.length}] • zoom ${userZoomPercent}%`;
 
   return {
     label,
-    zoomPercent,
+    zoomPercent: userZoomPercent,
     index,
     max: viewports.length - 1,
   };
