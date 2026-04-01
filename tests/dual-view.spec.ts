@@ -1,12 +1,13 @@
 import { chromium, test, type Browser, type Page } from "@playwright/test";
 import { getAllViewportResolutions } from "../src/viewport";
+import { getZoomPercent } from "../lib/util";
 
 const BASE_URL = "http://127.0.0.1:5500";
 const APP_URL = `${BASE_URL}/src/responsive-demo.html`;
 const CONTROL_URL = `${BASE_URL}/src/control-panel/control-panel.html`;
 
-const LEFT_WINDOW = { width: 1029, height: 801 };
-const RIGHT_WINDOW = { width: 441, height: 801 };
+const RENDERER_WINDOW = { width: 1029, height: 801 };
+const CONTROL_PANEL_WINDOW = { width: 441, height: 801 };
 
 let rendererPage: Page;
 let controlPanelPage: Page;
@@ -14,9 +15,9 @@ let controlPanelPage: Page;
 // Playwright bridge variables
 let index = 0;
 let useCustom = false;
-let customW = 441;
+let customW = 1000;
 let customH = 721;
-let userZoomPct = 100;
+let userZoomPercent = 100;
 
 // Viewports
 const viewports = getAllViewportResolutions();
@@ -59,16 +60,16 @@ async function openRendererAndControlPanel(): Promise<Browser> {
     args: ["--disable-popup-blocking"],
   });
 
-  const leftContext = await browser.newContext({
-    viewport: LEFT_WINDOW,
+  const rendererContext = await browser.newContext({
+    viewport: RENDERER_WINDOW,
   });
-  const rightContext = await browser.newContext({
-    viewport: RIGHT_WINDOW,
+  const controlPanelContext = await browser.newContext({
+    viewport: CONTROL_PANEL_WINDOW,
   });
 
   // Create the renderer and control panel pages.
-  rendererPage = await leftContext.newPage();
-  controlPanelPage = await rightContext.newPage();
+  rendererPage = await rendererContext.newPage();
+  controlPanelPage = await controlPanelContext.newPage();
 
   // Expose the Playwright bridge function to the control panel page.
   await controlPanelPage.exposeFunction(
@@ -79,14 +80,14 @@ async function openRendererAndControlPanel(): Promise<Browser> {
   await setWindowBounds(rendererPage, {
     left: 0,
     top: 0,
-    width: LEFT_WINDOW.width,
-    height: LEFT_WINDOW.height,
+    width: RENDERER_WINDOW.width,
+    height: RENDERER_WINDOW.height,
   });
   await setWindowBounds(controlPanelPage, {
-    left: LEFT_WINDOW.width,
+    left: RENDERER_WINDOW.width,
     top: 0,
-    width: RIGHT_WINDOW.width,
-    height: RIGHT_WINDOW.height,
+    width: CONTROL_PANEL_WINDOW.width,
+    height: CONTROL_PANEL_WINDOW.height,
   });
 
   // Navigate to the renderer and control panel pages.
@@ -105,10 +106,10 @@ async function __playwrightViewport(payload: {
   action: "init" | "next" | "prev" | "custom" | "zoom";
   w?: number;
   h?: number;
-  zoomPct?: number;
+  zoomPercent?: number;
 }) {
-  if (payload.action === "zoom" && typeof payload.zoomPct === "number") {
-    userZoomPct = Math.max(30, Math.min(200, payload.zoomPct));
+  if (payload.action === "zoom" && typeof payload.zoomPercent === "number") {
+    userZoomPercent = Math.max(30, Math.min(200, payload.zoomPercent));
   } else if (payload.action === "init") {
     useCustom = false;
     index = 0;
@@ -120,31 +121,39 @@ async function __playwrightViewport(payload: {
     index = Math.max(index - 1, 0);
   } else if (payload.action === "custom") {
     useCustom = true;
-    customW = Math.max(1, Math.round(payload.w ?? 441));
-    customH = Math.max(1, Math.round(payload.h ?? 721));
+    customW = Math.max(1, Math.round(payload.w ?? 0));
+    customH = Math.max(1, Math.round(payload.h ?? 0));
   }
 
   let vw = useCustom ? customW : Math.round(viewports[index].resolution.width);
   let vh = useCustom ? customH : Math.round(viewports[index].resolution.height);
   console.log("vw:", vw, "vh:", vh);
-  vw = 1029;
-  vh = 801;
-  await rendererPage.setViewportSize({ width: vw, height: vh });
 
-  const fit = Math.min(1, vw / 1920, vh / 1080);
-  const effectiveZoom = fit * userZoomPct;
-  await rendererPage.evaluate((z) => {
-    document.documentElement.style.zoom = `${z}%`;
-  }, effectiveZoom);
+  // Set the viewport size to the renderer window size.
+  await rendererPage.setViewportSize({
+    width: RENDERER_WINDOW.width,
+    height: RENDERER_WINDOW.height,
+  });
+
+  // Get the zoom percent required to display the viewport within the renderer window.
+  const zoomPercent = getZoomPercent(RENDERER_WINDOW, {
+    width: vw,
+    height: vh,
+  });
+
+  // Set the zoom percent to the renderer page.
+  await rendererPage.evaluate((zp) => {
+    document.documentElement.style.zoom = `${zp}%`;
+  }, zoomPercent);
 
   const vp = viewports[index];
   const label = useCustom
-    ? `Custom ${customW}x${customH} • zoom slider ${userZoomPct}% (effective ~${effectiveZoom.toFixed(0)}%)`
-    : `${vp.screen} | ${vp.layout} (${vw}x${vh}) [${index + 1}/${viewports.length}] • zoom ${userZoomPct}%`;
+    ? `Custom ${customW}x${customH} • zoom slider ${userZoomPercent}% (effective ~${zoomPercent.toFixed(0)}%)`
+    : `${vp.screen} | ${vp.layout} (${vw}x${vh}) [${index + 1}/${viewports.length}] • zoom ${userZoomPercent}%`;
 
   return {
     label,
-    zoomPct: userZoomPct,
+    zoomPercent,
     index,
     max: viewports.length - 1,
   };

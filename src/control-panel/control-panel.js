@@ -38,9 +38,9 @@
   }
 
   function syncZoomFromResult(result) {
-    if (result && typeof result.zoomPct === "number") {
-      if (zoomInput) zoomInput.value = String(result.zoomPct);
-      if (zoomValue) zoomValue.textContent = result.zoomPct + "%";
+    if (result && typeof result.zoomPercent === "number") {
+      if (zoomInput) zoomInput.value = String(result.zoomPercent);
+      if (zoomValue) zoomValue.textContent = result.zoomPercent + "%";
     }
   }
 
@@ -57,8 +57,12 @@
 
   if (customApplyBtn) {
     customApplyBtn.addEventListener("click", function () {
-      var w = Math.max(1, parseInt(customWInput.value, 10) || 441);
-      var h = Math.max(1, parseInt(customHInput.value, 10) || 721);
+      var w = parseInt(customWInput.value, 10);
+      var h = parseInt(customHInput.value, 10);
+      if (isNaN(w) || isNaN(h) || w < 10 || h < 10) {
+        setMeta("Invalid width or height");
+        return;
+      }
       callPlaywright({ action: "custom", w: w, h: h }).then(syncZoomFromResult);
     });
   }
@@ -67,7 +71,7 @@
     zoomInput.addEventListener("input", function () {
       var z = parseInt(zoomInput.value, 10) || 100;
       if (zoomValue) zoomValue.textContent = z + "%";
-      callPlaywright({ action: "zoom", zoomPct: z });
+      callPlaywright({ action: "zoom", zoomPercent: z });
     });
   }
 
