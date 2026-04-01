@@ -12,12 +12,20 @@
     if (metaEl) metaEl.textContent = text;
   }
 
-  function callPw(payload) {
-    var fn = window.__pwViewport;
+  /**
+   * Call the Playwright bridge to set the viewport.
+   * @param {Object} payload - The payload to send to the Playwright bridge.
+   * @returns {Promise<Object>} - The result from the Playwright bridge.
+   */
+  function callPlaywright(payload) {
+    var fn = window.__playwrightViewport;
+
     if (typeof fn !== "function") {
       setMeta("Playwright bridge missing — open via npm run view");
       return Promise.resolve(null);
     }
+
+    console.log("Calling Playwright bridge with payload:", payload);
     return Promise.resolve(fn(payload)).then(
       function (result) {
         if (result && result.label) setMeta(result.label);
@@ -38,12 +46,12 @@
 
   if (prevBtn) {
     prevBtn.addEventListener("click", function () {
-      void callPw({ action: "prev" }).then(syncZoomFromResult);
+      callPlaywright({ action: "prev" }).then(syncZoomFromResult);
     });
   }
   if (nextBtn) {
     nextBtn.addEventListener("click", function () {
-      void callPw({ action: "next" }).then(syncZoomFromResult);
+      callPlaywright({ action: "next" }).then(syncZoomFromResult);
     });
   }
 
@@ -51,7 +59,7 @@
     customApplyBtn.addEventListener("click", function () {
       var w = Math.max(1, parseInt(customWInput.value, 10) || 441);
       var h = Math.max(1, parseInt(customHInput.value, 10) || 721);
-      void callPw({ action: "custom", w: w, h: h }).then(syncZoomFromResult);
+      callPlaywright({ action: "custom", w: w, h: h }).then(syncZoomFromResult);
     });
   }
 
@@ -59,7 +67,7 @@
     zoomInput.addEventListener("input", function () {
       var z = parseInt(zoomInput.value, 10) || 100;
       if (zoomValue) zoomValue.textContent = z + "%";
-      void callPw({ action: "zoom", zoomPct: z });
+      callPlaywright({ action: "zoom", zoomPct: z });
     });
   }
 

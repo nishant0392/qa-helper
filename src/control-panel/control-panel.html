@@ -10,26 +10,36 @@
     <main class="panel">
       <h1>Control panel</h1>
       <p class="subtle">
-        Driven by Playwright (<code>npm run view</code>). Prev/Next change the app
-        viewport in the left window.
+        Driven by Playwright (<code>npm run view</code>). Prev/Next change the
+        app viewport in the left window.
       </p>
 
+      <!-- Prev/Next buttons -->
       <section class="row controls">
         <button id="prevBtn" type="button">Prev</button>
         <button id="nextBtn" type="button">Next</button>
       </section>
 
+      <!-- Zoom percentage -->
       <section class="row">
         <label for="zoomInput">Zoom %</label>
-        <input id="zoomInput" type="range" min="30" max="200" step="5" value="100" />
+        <input
+          id="zoomInput"
+          type="range"
+          min="30"
+          max="200"
+          step="5"
+          value="100"
+        />
         <span id="zoomValue">100%</span>
       </section>
 
+      <!-- Custom viewport size -->
       <section class="row row-custom">
-        <label>Custom W×H</label>
+        <label>Custom WxH</label>
         <div class="inline-inputs">
           <input id="customW" type="number" min="1" value="441" />
-          <span class="times">×</span>
+          <span class="times">x</span>
           <input id="customH" type="number" min="1" value="721" />
         </div>
         <button id="customApply" type="button">Apply</button>
