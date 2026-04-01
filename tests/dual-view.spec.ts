@@ -1,4 +1,4 @@
-import { chromium, test, type Page } from "@playwright/test";
+import { chromium, test, type Browser, type Page } from "@playwright/test";
 import { getAllViewportResolutions } from "../src/viewport";
 
 const BASE_URL = "http://127.0.0.1:5500";
@@ -8,8 +8,8 @@ const CONTROL_URL = `${BASE_URL}/src/control-panel/control-panel.html`;
 const LEFT_WINDOW = { width: 1029, height: 801 };
 const RIGHT_WINDOW = { width: 441, height: 801 };
 
-let leftPage: Page;
-let rightPage: Page;
+let rendererPage: Page;
+let controlPanelPage: Page;
 
 // Playwright bridge variables
 let index = 0;
@@ -53,44 +53,47 @@ async function setWindowBounds(
   }
 }
 
-async function openRendererAndControlPanel() {
+async function openRendererAndControlPanel(): Promise<Browser> {
   const browser = await chromium.launch({
     headless: false,
     args: ["--disable-popup-blocking"],
   });
 
-  try {
-    const leftContext = await browser.newContext({
-      viewport: LEFT_WINDOW,
-    });
-    const rightContext = await browser.newContext({
-      viewport: RIGHT_WINDOW,
-    });
+  const leftContext = await browser.newContext({
+    viewport: LEFT_WINDOW,
+  });
+  const rightContext = await browser.newContext({
+    viewport: RIGHT_WINDOW,
+  });
 
-    // Create the left and right page.
-    leftPage = await leftContext.newPage();
-    rightPage = await rightContext.newPage();
+  // Create the renderer and control panel pages.
+  rendererPage = await leftContext.newPage();
+  controlPanelPage = await rightContext.newPage();
 
-    await leftPage.goto(APP_URL);
-    await rightPage.goto(CONTROL_URL);
+  // Expose the Playwright bridge function to the control panel page.
+  await controlPanelPage.exposeFunction(
+    "__playwrightViewport",
+    __playwrightViewport,
+  );
 
-    await setWindowBounds(leftPage, {
-      left: 0,
-      top: 0,
-      width: LEFT_WINDOW.width,
-      height: LEFT_WINDOW.height,
-    });
-    await setWindowBounds(rightPage, {
-      left: LEFT_WINDOW.width,
-      top: 0,
-      width: RIGHT_WINDOW.width,
-      height: RIGHT_WINDOW.height,
-    });
+  await setWindowBounds(rendererPage, {
+    left: 0,
+    top: 0,
+    width: LEFT_WINDOW.width,
+    height: LEFT_WINDOW.height,
+  });
+  await setWindowBounds(controlPanelPage, {
+    left: LEFT_WINDOW.width,
+    top: 0,
+    width: RIGHT_WINDOW.width,
+    height: RIGHT_WINDOW.height,
+  });
 
-    await leftPage.waitForTimeout(60 * 60 * 1000);
-  } finally {
-    await browser.close();
-  }
+  // Navigate to the renderer and control panel pages.
+  await rendererPage.goto(APP_URL);
+  await controlPanelPage.goto(CONTROL_URL);
+
+  return browser;
 }
 
 /**
@@ -126,11 +129,11 @@ async function __playwrightViewport(payload: {
   console.log("vw:", vw, "vh:", vh);
   vw = 1029;
   vh = 801;
-  await leftPage.setViewportSize({ width: vw, height: vh });
+  await rendererPage.setViewportSize({ width: vw, height: vh });
 
   const fit = Math.min(1, vw / 1920, vh / 1080);
   const effectiveZoom = fit * userZoomPct;
-  await leftPage.evaluate((z) => {
+  await rendererPage.evaluate((z) => {
     document.documentElement.style.zoom = `${z}%`;
   }, effectiveZoom);
 
@@ -151,19 +154,24 @@ async function __playwrightViewport(payload: {
 test("open renderer and control panel side-by-side", async () => {
   test.setTimeout(60 * 60 * 1000);
 
-  // Open the renderer and control panel
-  await openRendererAndControlPanel();
+  // Open the browser with the renderer and control panel.
+  const browser = await openRendererAndControlPanel();
 
-  // Setup the Playwright bridge.
-  await rightPage.exposeFunction("__playwrightViewport", __playwrightViewport);
+  try {
+    // Initialize the Playwright bridge.
+    await controlPanelPage.evaluate(async () => {
+      const fn = (window as any).__playwrightViewport;
+      if (typeof fn !== "function") return;
 
-  // Initialize the Playwright bridge.
-  await rightPage.evaluate(async () => {
-    const r = await __playwrightViewport({ action: "init" });
-    const meta = document.getElementById("meta");
-    if (meta && r && r.label) meta.textContent = r.label;
-  });
+      const r = await fn({ action: "init" });
+      const meta = document.getElementById("meta");
+      if (meta && r && r.label) meta.textContent = r.label;
+    });
 
-  // Wait for the test to complete.
-  await leftPage.waitForTimeout(60 * 60 * 1000);
+    // Wait for the test to complete.
+    await rendererPage.waitForTimeout(60 * 60 * 1000);
+  } finally {
+    // Close the browser.
+    await browser.close();
+  }
 });
